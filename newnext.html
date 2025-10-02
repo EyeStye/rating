@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rating Tracker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        text-align: center;
+      }
+
+      .rating-box {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 8px;
+        display: inline-block;
+        width: 250px;
+        text-align: center;
+      }
+
+      .cf-rating,
+      .cf-max-rating {
+        font-size: 50px;
+        font-weight: bold;
+        font-family: "Helvetica Neue", sans-serif;
+      }
+
+      .cf-rating {
+        color: #333536;
+      }
+
+      .cf-max-rating {
+        color: #3d403d;
+      }
+
+      .lgm-rating {
+        white-space: nowrap;
+      }
+
+      .lgm-rating span.first-digit {
+        color: black;
+        font-weight: bold;
+      }
+
+      .lgm-rating span.rest-digits {
+        color: red;
+        font-weight: bold;
+      }
+
+      .input-container {
+        margin-bottom: 40px;
+      }
+
+      #username {
+        padding: 8px;
+        font-size: 16px;
+        width: 200px;
+        margin-right: 10px;
+      }
+
+      #fetch-button {
+        padding: 8px 16px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      #fetch-button:hover {
+        background-color: #0056b3;
+      }
+
+      .error-message {
+        color: red;
+        font-size: 18px;
+        margin-top: 10px;
+      }
+
+      .user-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        gap: 10px;
+      }
+
+      .user-svg {
+        width: 50px;
+        height: 50px;
+      }
+
+      #user-name {
+        font-size: 36px;
+        font-weight: bold;
+        font-family: "Helvetica Neue", sans-serif;
+        color: #333536;
+        user-select: none;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Live Rating Tracker</h1>
+
+    <div class="input-container">
+      <input
+        type="text"
+        id="username"
+        placeholder="Enter Codeforces Username"
+      />
+      <button id="fetch-button">Fetch Ratings</button>
+    </div>
+
+    <div class="user-container">
+      <svg class="user-svg" viewBox="0 0 120 120" aria-label="User rating">
+        <!-- Circle border -->
+        <circle
+          id="user-circle-border"
+          cx="60"
+          cy="60"
+          r="50"
+          stroke="#ccc"
+          stroke-width="4"
+          fill="none"
+        />
+
+        <!-- Water fill clip -->
+        <clipPath id="water-clip">
+          <rect id="water-fill" x="10" y="120" width="100" height="0" />
+        </clipPath>
+
+        <!-- Filled circle -->
+        <circle
+          id="water-circle"
+          cx="60"
+          cy="60"
+          r="50"
+          fill="#9e9e9e"
+          clip-path="url(#water-clip)"
+        />
+
+        <!-- LGM center black dot -->
+        <circle
+          id="lgm-dot"
+          cx="60"
+          cy="60"
+          r="30"
+          fill="black"
+          style="display: none"
+        />
+      </svg>
+
+      <div id="user-name">Username</div>
+    </div>
+
+    <div id="codeforces" class="rating-box cf-rating">
+      <h6>Current ELO</h6>
+      <div id="cf-rating">---</div>
+    </div>
+
+    <div id="codeforces-max" class="rating-box cf-max-rating">
+      <h6>Peak ELO</h6>
+      <div id="cf-max-rating">---</div>
+    </div>
+
+    <div class="error-message"></div>
+
+    <script>
+      document.getElementById("fetch-button").addEventListener("click", () => {
+        const handle = document.getElementById("username").value.trim();
+        if (handle) {
+          fetchRating(handle);
+        } else {
+          alert("Please enter a valid Codeforces username.");
+        }
+      });
+
+      function fetchRating(handle) {
+        fetch(`https://codeforces.com/api/user.info?handles=${handle}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status !== "OK") throw new Error("Invalid user");
+
+            const user = data.result[0];
+            const currentRating = user.rating || 0;
+            const maxRating = user.maxRating || 0;
+            const username = user.handle;
+
+            document.querySelector(".error-message").textContent = "";
+            document.getElementById("user-name").textContent = username;
+
+            const currentColor = getColorFromRating(currentRating);
+            const maxColor = getColorFromRating(maxRating);
+
+            const fillRect = document.getElementById("water-fill");
+            const waterCircle = document.getElementById("water-circle");
+            const lgmDot = document.getElementById("lgm-dot");
+            const circleBorder = document.getElementById("user-circle-border");
+
+            document.getElementById("user-name").style.color = currentColor;
+
+            // Handle LGM differently
+            if (currentRating >= 3000) {
+              // Disable water fill
+              fillRect.setAttribute("height", 0);
+              fillRect.setAttribute("y", 120);
+              waterCircle.setAttribute("fill", "none");
+              waterCircle.removeAttribute("clip-path");
+
+              lgmDot.style.display = "block";
+              circleBorder.setAttribute("stroke", "red");
+            } else {
+              // Normal user
+              const { percent, color } =
+                getRatingPercentAndColor(currentRating);
+              const fillHeight = 100 * percent;
+              const fillY = 120 - fillHeight;
+
+              fillRect.setAttribute("y", fillY);
+              fillRect.setAttribute("height", fillHeight);
+              waterCircle.setAttribute("fill", color);
+              waterCircle.setAttribute("clip-path", "url(#water-clip)");
+              lgmDot.style.display = "none";
+              circleBorder.setAttribute("stroke", color);
+            }
+
+            // Set current rating
+            const cfRatingEl = document.getElementById("cf-rating");
+            if (currentRating >= 3000) {
+              cfRatingEl.innerHTML = formatLGM(currentRating);
+            } else {
+              cfRatingEl.textContent = currentRating;
+              cfRatingEl.style.color = currentColor;
+            }
+
+            // Set max rating
+            const cfMaxRatingEl = document.getElementById("cf-max-rating");
+            if (maxRating >= 3000) {
+              cfMaxRatingEl.innerHTML = formatLGM(maxRating);
+            } else {
+              cfMaxRatingEl.textContent = maxRating;
+              cfMaxRatingEl.style.color = maxColor;
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            document.querySelector(".error-message").textContent =
+              "Failed to load user data.";
+            document.getElementById("cf-rating").textContent = "Error";
+            document.getElementById("cf-max-rating").textContent = "Error";
+            document.getElementById("user-name").textContent = "";
+
+            const fillRect = document.getElementById("water-fill");
+            fillRect.setAttribute("y", 120);
+            fillRect.setAttribute("height", 0);
+            document
+              .getElementById("water-circle")
+              .setAttribute("fill", "#9e9e9e");
+            document
+              .getElementById("user-circle-border")
+              .setAttribute("stroke", "#ccc");
+            document.getElementById("lgm-dot").style.display = "none";
+          });
+      }
+
+      function getRatingPercentAndColor(rating) {
+        let percent = 0;
+        let color = "#9e9e9e";
+
+        if (rating < 1200) {
+          percent = rating / 1200;
+          color = "#9e9e9e";
+        } else if (rating < 1400) {
+          percent = (rating - 1200) / 200;
+          color = "#388e3c";
+        } else if (rating < 1600) {
+          percent = (rating - 1400) / 200;
+          color = "#00bcd4";
+        } else if (rating < 1900) {
+          percent = (rating - 1600) / 300;
+          color = "#4213eb";
+        } else if (rating < 2200) {
+          percent = (rating - 1900) / 300;
+          color = "#8e24aa";
+        } else if (rating < 2300) {
+          percent = (rating - 2200) / 100;
+          color = "#fb8c00";
+        } else if (rating < 2400) {
+          percent = (rating - 2300) / 100;
+          color = "#fb8c00";
+        } else if (rating < 2600) {
+          percent = (rating - 2400) / 200;
+          color = "#d32f2f";
+        } else {
+          percent = 1;
+          color = "red";
+        }
+
+        return { percent: Math.min(Math.max(percent, 0), 1), color };
+      }
+
+      function getColorFromRating(rating) {
+        if (rating >= 3000) return "red";
+        if (rating >= 2600) return "red";
+        if (rating >= 2400) return "red";
+        if (rating >= 2300) return "#fb8c00";
+        if (rating >= 2200) return "#fb8c00";
+        if (rating >= 1900) return "#8e24aa";
+        if (rating >= 1600) return "#4213eb";
+        if (rating >= 1400) return "#00bcd4";
+        if (rating >= 1200) return "#388e3c";
+        return "#9e9e9e";
+      }
+
+      function formatLGM(rating) {
+        const str = rating.toString();
+        return `<span class="lgm-rating"><span class="first-digit">${
+          str[0]
+        }</span><span class="rest-digits">${str.slice(1)}</span></span>`;
+      }
+    </script>
+  </body>
+</html>
