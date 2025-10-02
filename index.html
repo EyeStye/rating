@@ -284,11 +284,11 @@
         } else if (rating < 1900) {
           percent = (rating - 1600) / 300;
           color = "#4213eb";
-        } else if (rating < 2200) {
-          percent = (rating - 1900) / 300;
+        } else if (rating < 2100) {
+          percent = (rating - 1900) / 200;
           color = "#8e24aa";
         } else if (rating < 2300) {
-          percent = (rating - 2200) / 100;
+          percent = (rating - 2200) / 200;
           color = "#fb8c00";
         } else if (rating < 2400) {
           percent = (rating - 2300) / 100;
@@ -309,7 +309,7 @@
         if (rating >= 2600) return "red";
         if (rating >= 2400) return "red";
         if (rating >= 2300) return "#fb8c00";
-        if (rating >= 2200) return "#fb8c00";
+        if (rating >= 2100) return "#fb8c00";
         if (rating >= 1900) return "#8e24aa";
         if (rating >= 1600) return "#4213eb";
         if (rating >= 1400) return "#00bcd4";
