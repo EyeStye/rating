@@ -15,11 +15,17 @@
 
       .rating-box {
         margin: 10px;
-        padding: 20px;
+        padding: 10px;
         border-radius: 8px;
         display: inline-block;
-        width: 250px;
+        width: 300px;
         text-align: center;
+      }
+
+      .rating-box h6 {
+        margin-bottom: 8px; /* reduce vertical space below the heading */
+        font-size: 25px; /* optional: smaller heading font */
+        font-weight: bold; /* optional: lighter heading */
       }
 
       .cf-rating,
@@ -85,7 +91,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 10px;
+        margin-bottom: -10px;
         gap: 10px;
       }
 
@@ -178,6 +184,11 @@
       <div id="cf-max-rating">---</div>
     </div>
 
+    <div id="to-promote" class="rating-box cf-max-rating">
+      <h6>To Promote</h6>
+      <div id="to-promote-rating">---</div>
+    </div>
+
     <div class="error-message"></div>
 
     <script>
@@ -197,6 +208,38 @@
           }
         });
 
+      const RANK_THRESHOLDS = [
+        { title: "LGM", rating: 3000 },
+        { title: "IGM", rating: 2600 },
+        { title: "GM", rating: 2400 },
+        { title: "IM", rating: 2300 },
+        { title: "M", rating: 2100 },
+        { title: "CM", rating: 1900 },
+        { title: "E", rating: 1600 },
+        { title: "S", rating: 1400 },
+        { title: "P", rating: 1200 },
+        { title: "N", rating: 0 },
+      ];
+
+      function getDeltaToNextRank(currentRating) {
+        // Find the first rank with rating > currentRating (ranks sorted descending)
+        for (let i = RANK_THRESHOLDS.length - 1; i >= 0; i--) {
+          if (currentRating < RANK_THRESHOLDS[i].rating) {
+            return {
+              delta: RANK_THRESHOLDS[i].rating - currentRating,
+              next: RANK_THRESHOLDS[i].title,
+              nextRating: RANK_THRESHOLDS[i].rating,
+            };
+          }
+        }
+        // At or above max rank
+        return {
+          delta: 0,
+          next: "Max Rank",
+          nextRating: RANK_THRESHOLDS[0].rating,
+        };
+      }
+
       function fetchRating(handle) {
         fetch(`https://codeforces.com/api/user.info?handles=${handle}`)
           .then((response) => response.json())
@@ -209,7 +252,8 @@
             const username = user.handle;
 
             document.querySelector(".error-message").textContent = "";
-            // document.getElementById("user-name").textContent = username;
+
+            // Format username for LGM users
             if (currentRating >= 3000) {
               document.getElementById("user-name").innerHTML =
                 formatLGM(username);
@@ -217,20 +261,20 @@
               document.getElementById("user-name").textContent = username;
             }
 
-            const currentColor = getColorFromRating(currentRating);
-            const maxColor = getColorFromRating(maxRating);
-
             const fillRect = document.getElementById("water-fill");
             const waterCircle = document.getElementById("water-circle");
             const lgmDot = document.getElementById("lgm-dot");
             const igmDot = document.getElementById("igm-dot");
             const circleBorder = document.getElementById("user-circle-border");
+            const userNameEl = document.getElementById("user-name");
 
-            document.getElementById("user-name").style.color = currentColor;
+            // Reset dots
+            lgmDot.style.display = "none";
+            igmDot.style.display = "none";
 
-            // Handle LGM and IGM differently
+            // Update circle, dots, and colors
             if (currentRating >= 3000) {
-              // Disable water fill
+              // Legendary Grandmaster
               fillRect.setAttribute("height", 0);
               fillRect.setAttribute("y", 120);
               waterCircle.setAttribute("fill", "none");
@@ -238,18 +282,19 @@
 
               lgmDot.style.display = "block";
               circleBorder.setAttribute("stroke", "red");
+              userNameEl.style.color = "black"; // LGM username black color
             } else if (currentRating >= 2600) {
-              // Disable water fill
+              // International Grandmaster
               fillRect.setAttribute("height", 0);
               fillRect.setAttribute("y", 120);
               waterCircle.setAttribute("fill", "none");
               waterCircle.removeAttribute("clip-path");
 
-              lgmDot.style.display = "none";
               igmDot.style.display = "block";
               circleBorder.setAttribute("stroke", "red");
+              userNameEl.style.color = getColorFromRating(currentRating);
             } else {
-              // Normal user
+              // Normal users with water fill
               const { percent, color } =
                 getRatingPercentAndColor(currentRating);
               const fillHeight = 100 * percent;
@@ -259,9 +304,8 @@
               fillRect.setAttribute("height", fillHeight);
               waterCircle.setAttribute("fill", color);
               waterCircle.setAttribute("clip-path", "url(#water-clip)");
-              lgmDot.style.display = "none";
-              igmDot.style.display = "none";
               circleBorder.setAttribute("stroke", color);
+              userNameEl.style.color = color;
             }
 
             // Set current rating
@@ -270,7 +314,7 @@
               cfRatingEl.innerHTML = formatLGM(currentRating);
             } else {
               cfRatingEl.textContent = currentRating;
-              cfRatingEl.style.color = currentColor;
+              cfRatingEl.style.color = getColorFromRating(currentRating);
             }
 
             // Set max rating
@@ -279,7 +323,21 @@
               cfMaxRatingEl.innerHTML = formatLGM(maxRating);
             } else {
               cfMaxRatingEl.textContent = maxRating;
-              cfMaxRatingEl.style.color = maxColor;
+              cfMaxRatingEl.style.color = getColorFromRating(maxRating);
+            }
+
+            // Update "To Promote" box
+            const { delta, next, nextRating } =
+              getDeltaToNextRank(currentRating);
+            const toPromoteEl = document.getElementById("to-promote-rating");
+
+            if (delta === 0) {
+              toPromoteEl.textContent = "👑";
+              toPromoteEl.style.color = "black";
+            } else {
+              const nextColor = getColorFromRating(nextRating);
+              toPromoteEl.textContent = `+${delta} 🡭 ${next}`;
+              toPromoteEl.style.color = nextColor;
             }
           })
           .catch((err) => {
@@ -288,6 +346,7 @@
               "Failed to load user data.";
             document.getElementById("cf-rating").textContent = "Error";
             document.getElementById("cf-max-rating").textContent = "Error";
+            document.getElementById("to-promote-rating").textContent = "---";
             document.getElementById("user-name").textContent = "";
 
             const fillRect = document.getElementById("water-fill");
@@ -353,8 +412,9 @@
         return "#9e9e9e";
       }
 
-      function formatLGM(rating) {
-        const str = rating.toString();
+      function formatLGM(ratingOrUsername) {
+        // If number input (rating), convert to string
+        const str = ratingOrUsername.toString();
         return `<span class="lgm-rating"><span class="first-digit">${
           str[0]
         }</span><span class="rest-digits">${str.slice(1)}</span></span>`;
