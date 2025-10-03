@@ -217,26 +217,27 @@
 
       /* Media query for smaller screens */
       @media (max-width: 768px) {
-        /* Make the user container and sections stack vertically */
+        /* User container should stack vertically */
         .user-container {
           flex-direction: column;
           align-items: center;
+          margin-bottom: 10px; /* Reduced space between user name and rating sections */
         }
 
-        /* Make rating boxes take up full width on smaller screens */
+        /* Rating boxes should take up full width */
         .rating-box {
           width: 100%;
-          margin: 10px 0;
-          padding: 15px;
+          margin: 5px 0; /* Reduced gap between sections */
+          padding: 12px; /* Adjusted padding for mobile */
         }
 
-        /* Reduce font size for current elo and max elo */
+        /* Adjust font size for current elo and max elo */
         .cf-rating,
         .cf-max-rating {
           font-size: 40px;
         }
 
-        /* Adjust input box and button width for mobile */
+        /* Adjust input box and button width */
         #username {
           width: 100%;
           margin-bottom: 10px;
@@ -247,19 +248,16 @@
           width: 100%;
         }
 
-        /* Reduce the space between user name and ratings */
-        .user-container {
-          margin-bottom: 20px;
-        }
-
-        /* Reduce font size for user name */
+        /* Reduced space between user name and ratings */
         #user-name {
           font-size: 28px;
+          margin-bottom: 10px; /* Reduced margin */
         }
 
         /* Style changes for smaller screens */
         .rating-box h6 {
           font-size: 18px;
+          margin-bottom: 8px; /* Reduced space between heading and value */
         }
 
         .error-message {
