@@ -108,6 +108,164 @@
         user-select: none;
         white-space: nowrap;
       }
+      /* mobile */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        text-align: center;
+      }
+
+      /* Styling for the rating boxes */
+      .rating-box {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 8px;
+        display: inline-block;
+        width: 250px;
+        text-align: center;
+      }
+
+      /* Rating box for codeforces rating */
+      .cf-rating,
+      .cf-max-rating {
+        font-size: 50px;
+        font-weight: bold;
+        font-family: "Helvetica Neue", sans-serif;
+      }
+
+      .cf-rating {
+        color: #333536;
+      }
+
+      .cf-max-rating {
+        color: #3d403d;
+      }
+
+      /* LGM Rating Styling */
+      .lgm-rating {
+        white-space: nowrap;
+      }
+
+      .lgm-rating span.first-digit {
+        color: black;
+        font-weight: bold;
+      }
+
+      .lgm-rating span.rest-digits {
+        color: red;
+        font-weight: bold;
+      }
+
+      /* Container for input and button */
+      .input-container {
+        margin-bottom: 40px;
+      }
+
+      /* Username input box */
+      #username {
+        padding: 8px;
+        font-size: 16px;
+        width: 200px;
+        margin-right: 10px;
+      }
+
+      /* Button for fetching the rating */
+      #fetch-button {
+        padding: 8px 16px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      #fetch-button:hover {
+        background-color: #0056b3;
+      }
+
+      /* Error message */
+      .error-message {
+        color: red;
+        font-size: 18px;
+        margin-top: 10px;
+      }
+
+      /* User container styling */
+      .user-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        gap: 10px;
+      }
+
+      .user-svg {
+        width: 50px;
+        height: 50px;
+      }
+
+      #user-name {
+        font-size: 36px;
+        font-weight: bold;
+        font-family: "Helvetica Neue", sans-serif;
+        color: #333536;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      /* Media query for smaller screens */
+      @media (max-width: 768px) {
+        /* Make the user container and sections stack vertically */
+        .user-container {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        /* Make rating boxes take up full width on smaller screens */
+        .rating-box {
+          width: 100%;
+          margin: 10px 0;
+          padding: 15px;
+        }
+
+        /* Reduce font size for current elo and max elo */
+        .cf-rating,
+        .cf-max-rating {
+          font-size: 40px;
+        }
+
+        /* Adjust input box and button width for mobile */
+        #username {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+
+        /* Make the fetch button take up full width */
+        #fetch-button {
+          width: 100%;
+        }
+
+        /* Reduce the space between user name and ratings */
+        .user-container {
+          margin-bottom: 20px;
+        }
+
+        /* Reduce font size for user name */
+        #user-name {
+          font-size: 28px;
+        }
+
+        /* Style changes for smaller screens */
+        .rating-box h6 {
+          font-size: 18px;
+        }
+
+        .error-message {
+          font-size: 16px;
+        }
+      }
     </style>
   </head>
   <body>
