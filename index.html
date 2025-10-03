@@ -209,7 +209,13 @@
             const username = user.handle;
 
             document.querySelector(".error-message").textContent = "";
-            document.getElementById("user-name").textContent = username;
+            // document.getElementById("user-name").textContent = username;
+            if (currentRating >= 3000) {
+              document.getElementById("user-name").innerHTML =
+                formatLGM(username);
+            } else {
+              document.getElementById("user-name").textContent = username;
+            }
 
             const currentColor = getColorFromRating(currentRating);
             const maxColor = getColorFromRating(maxRating);
@@ -239,6 +245,7 @@
               waterCircle.setAttribute("fill", "none");
               waterCircle.removeAttribute("clip-path");
 
+              lgmDot.style.display = "none";
               igmDot.style.display = "block";
               circleBorder.setAttribute("stroke", "red");
             } else {
@@ -314,10 +321,10 @@
           percent = (rating - 1600) / 300;
           color = "#4213eb";
         } else if (rating < 2100) {
-          percent = (rating - 1900) / 300;
+          percent = (rating - 1900) / 200;
           color = "#8e24aa";
         } else if (rating < 2300) {
-          percent = (rating - 2200) / 100;
+          percent = (rating - 2100) / 200;
           color = "#fb8c00";
         } else if (rating < 2400) {
           percent = (rating - 2300) / 100;
