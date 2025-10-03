@@ -144,6 +144,16 @@
           clip-path="url(#water-clip)"
         />
 
+        <!-- IGM center red dot -->
+        <circle
+          id="igm-dot"
+          cx="60"
+          cy="60"
+          r="30"
+          fill="red"
+          style="display: none"
+        />
+
         <!-- LGM center black dot -->
         <circle
           id="lgm-dot"
@@ -200,11 +210,12 @@
             const fillRect = document.getElementById("water-fill");
             const waterCircle = document.getElementById("water-circle");
             const lgmDot = document.getElementById("lgm-dot");
+            const igmDot = document.getElementById("igm-dot");
             const circleBorder = document.getElementById("user-circle-border");
 
             document.getElementById("user-name").style.color = currentColor;
 
-            // Handle LGM differently
+            // Handle LGM and IGM differently
             if (currentRating >= 3000) {
               // Disable water fill
               fillRect.setAttribute("height", 0);
@@ -213,6 +224,15 @@
               waterCircle.removeAttribute("clip-path");
 
               lgmDot.style.display = "block";
+              circleBorder.setAttribute("stroke", "red");
+            } else if (currentRating >= 2600) {
+              // Disable water fill
+              fillRect.setAttribute("height", 0);
+              fillRect.setAttribute("y", 120);
+              waterCircle.setAttribute("fill", "none");
+              waterCircle.removeAttribute("clip-path");
+
+              igmDot.style.display = "block";
               circleBorder.setAttribute("stroke", "red");
             } else {
               // Normal user
@@ -265,6 +285,7 @@
               .getElementById("user-circle-border")
               .setAttribute("stroke", "#ccc");
             document.getElementById("lgm-dot").style.display = "none";
+            document.getElementById("igm-dot").style.display = "none";
           });
       }
 
@@ -285,17 +306,17 @@
           percent = (rating - 1600) / 300;
           color = "#4213eb";
         } else if (rating < 2100) {
-          percent = (rating - 1900) / 200;
+          percent = (rating - 1900) / 300;
           color = "#8e24aa";
         } else if (rating < 2300) {
-          percent = (rating - 2200) / 200;
+          percent = (rating - 2200) / 100;
           color = "#fb8c00";
         } else if (rating < 2400) {
           percent = (rating - 2300) / 100;
           color = "#fb8c00";
         } else if (rating < 2600) {
           percent = (rating - 2400) / 200;
-          color = "#d32f2f";
+          color = "red";
         } else {
           percent = 1;
           color = "red";
@@ -326,4 +347,3 @@
     </script>
   </body>
 </html>
-
